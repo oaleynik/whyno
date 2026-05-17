@@ -3,6 +3,7 @@ mod wine;
 
 use anyhow::Result;
 use clap::{Parser, Subcommand};
+use directories::ProjectDirs;
 use std::path::PathBuf;
 use storage::{load_wines, save_wines};
 use wine::{Wine, WineInput};
@@ -10,10 +11,20 @@ use wine::{Wine, WineInput};
 #[derive(Parser, Debug)]
 #[command(version = "0.1.0", about, long_about = None)]
 struct Args {
-    #[arg(short, long, default_value = "./whyno.json")]
-    data: String,
+    #[arg(short, long)]
+    data: Option<String>,
     #[clap(subcommand)]
     subcommand: Subcmd,
+}
+
+fn get_default_data_path() -> PathBuf {
+    if let Some(proj_dirs) = ProjectDirs::from("com", "whyno", "whyno") {
+        let data_dir = proj_dirs.data_dir();
+        std::fs::create_dir_all(data_dir).ok();
+        data_dir.join("wines.json")
+    } else {
+        PathBuf::from("./whyno.json")
+    }
 }
 
 #[derive(Subcommand, Debug)]
@@ -83,11 +94,13 @@ struct UpdateArgs {
 
 fn main() -> Result<()> {
     let args = Args::parse();
-    let data_path = PathBuf::from(&args.data);
+    let data_path = args
+        .data
+        .map(PathBuf::from)
+        .unwrap_or_else(get_default_data_path);
 
     match args.subcommand {
         Subcmd::Add(add_args) => {
-            println!("Using data file: {}", args.data);
             let mut wines = load_wines(&data_path)?;
             let next_id = wines.iter().map(|w| w.id).max().unwrap_or(0) + 1;
 
