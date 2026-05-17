@@ -1,5 +1,8 @@
+mod wine;
+
 use anyhow::Result;
 use clap::{Parser, Subcommand};
+use wine::{Wine, WineInput};
 
 #[derive(Parser, Debug)]
 #[command(version = "0.1.0", about, long_about = None)]
@@ -38,14 +41,33 @@ fn main() -> Result<()> {
 
     match args.subcommand {
         Subcmd::Add(add_args) => {
-            println!("Adding wine: {}", add_args.name);
-            if let Some(rating) = add_args.rating {
-                println!("  Rating: {}", rating);
+            let input = WineInput {
+                name: add_args.name.clone(),
+                producer: add_args.producer,
+                vintage: add_args.vintage,
+                region: add_args.region,
+                country: add_args.country,
+                grape: add_args.grape,
+                rating: add_args.rating,
+                notes: add_args.notes,
+            };
+
+            match Wine::from_input(1, input) {
+                Ok(wine) => {
+                    println!("Validated wine: {} (ID: {})", wine.name, wine.id);
+                    if let Some(rating) = wine.rating {
+                        println!("  Rating: {}", rating);
+                    }
+                    if let Some(notes) = &wine.notes {
+                        println!("  Notes: {}", notes);
+                    }
+                    println!("(Storage not yet implemented)");
+                }
+                Err(e) => {
+                    eprintln!("Error: {}", e);
+                    std::process::exit(1);
+                }
             }
-            if let Some(notes) = add_args.notes {
-                println!("  Notes: {}", notes);
-            }
-            println!("(Storage not yet implemented)");
         }
         Subcmd::List => println!("Listing wines (storage not yet implemented)"),
     }
