@@ -212,12 +212,14 @@ fn main() -> Result<()> {
             } else {
                 println!("Found {} wine(s):\n", filtered.len());
                 for wine in filtered {
-                    println!(
-                        "{}. {} — {}/5",
-                        wine.id,
-                        wine.name,
-                        wine.rating.unwrap_or(0)
-                    );
+                    match wine.rating {
+                        Some(rating) => {
+                            println!("{}. {} — {}/5", wine.id, wine.name, rating);
+                        }
+                        None => {
+                            println!("{}. {} — Unrated", wine.id, wine.name);
+                        }
+                    }
                     if let Some(producer) = &wine.producer {
                         println!("   Producer: {}", producer);
                     }
@@ -247,7 +249,14 @@ fn main() -> Result<()> {
         Subcmd::Show { id } => {
             let wines = load_wines(&data_path)?;
             if let Some(wine) = wines.iter().find(|w| w.id == id) {
-                println!("{} — {}/5", wine.name, wine.rating.unwrap_or(0));
+                match wine.rating {
+                    Some(rating) => {
+                        println!("{} — {}/5", wine.name, rating);
+                    }
+                    None => {
+                        println!("{} — Unrated", wine.name);
+                    }
+                }
                 if let Some(producer) = &wine.producer {
                     println!("Producer: {}", producer);
                 }
