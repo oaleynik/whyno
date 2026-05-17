@@ -21,6 +21,7 @@ enum Subcmd {
     Add(AddArgs),
     List(ListArgs),
     Show { id: u64 },
+    Update(UpdateArgs),
     Remove { id: u64 },
 }
 
@@ -41,6 +42,27 @@ struct ListArgs {
 #[derive(Parser, Debug)]
 struct AddArgs {
     name: String,
+    #[arg(short, long)]
+    vintage: Option<u32>,
+    #[arg(short, long)]
+    producer: Option<String>,
+    #[arg(long)]
+    region: Option<String>,
+    #[arg(short, long)]
+    country: Option<String>,
+    #[arg(short, long)]
+    grape: Option<String>,
+    #[arg(short, long)]
+    rating: Option<u8>,
+    #[arg(short, long)]
+    notes: Option<String>,
+    #[arg(short, long, value_delimiter = ',')]
+    tag: Option<Vec<String>>,
+}
+
+#[derive(Parser, Debug)]
+struct UpdateArgs {
+    id: u64,
     #[arg(short, long)]
     vintage: Option<u32>,
     #[arg(short, long)]
@@ -240,6 +262,53 @@ fn main() -> Result<()> {
                 }
             } else {
                 eprintln!("Error: Wine with ID {} not found", id);
+                std::process::exit(1);
+            }
+        }
+        Subcmd::Update(update_args) => {
+            let mut wines = load_wines(&data_path)?;
+            if let Some(pos) = wines.iter().position(|w| w.id == update_args.id) {
+                let wine = &mut wines[pos];
+
+                // Update fields if provided
+                if let Some(vintage) = update_args.vintage {
+                    if vintage < 1900 || vintage > 2100 {
+                        eprintln!("Error: Vintage must be between 1900 and 2100");
+                        std::process::exit(1);
+                    }
+                    wine.vintage = Some(vintage);
+                }
+                if let Some(producer) = update_args.producer {
+                    wine.producer = Some(producer.trim().to_string());
+                }
+                if let Some(region) = update_args.region {
+                    wine.region = Some(region.trim().to_string());
+                }
+                if let Some(country) = update_args.country {
+                    wine.country = Some(country.trim().to_string());
+                }
+                if let Some(grape) = update_args.grape {
+                    wine.grapes = Some(vec![grape.trim().to_string()]);
+                }
+                if let Some(rating) = update_args.rating {
+                    if !(1..=5).contains(&rating) {
+                        eprintln!("Error: Rating must be between 1 and 5");
+                        std::process::exit(1);
+                    }
+                    wine.rating = Some(rating);
+                }
+                if let Some(notes) = update_args.notes {
+                    wine.notes = Some(notes.trim().to_string());
+                }
+                if let Some(tags) = update_args.tag {
+                    wine.tags = Some(tags.iter().map(|t| t.trim().to_string()).collect());
+                }
+
+                let wine_name = wine.name.clone();
+                save_wines(&data_path, &wines)?;
+                println!("Updated wine: {}", wine_name);
+            } else {
+                eprintln!("Error: Wine with ID {} not found", update_args.id);
                 std::process::exit(1);
             }
         }
