@@ -41,6 +41,8 @@ struct AddArgs {
     rating: Option<u8>,
     #[arg(short, long)]
     notes: Option<String>,
+    #[arg(short, long, value_delimiter = ',')]
+    tag: Option<Vec<String>>,
 }
 
 fn main() -> Result<()> {
@@ -62,6 +64,7 @@ fn main() -> Result<()> {
                 grape: add_args.grape,
                 rating: add_args.rating,
                 notes: add_args.notes,
+                tags: add_args.tag,
             };
 
             match Wine::from_input(next_id, input) {

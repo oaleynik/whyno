@@ -25,6 +25,7 @@ pub struct WineInput {
     pub grape: Option<String>,
     pub rating: Option<u8>,
     pub notes: Option<String>,
+    pub tags: Option<Vec<String>>,
 }
 
 impl Wine {
@@ -58,7 +59,9 @@ impl Wine {
             grapes: input.grape.map(|g| vec![g.trim().to_string()]),
             rating: input.rating,
             notes: input.notes.map(|s| s.trim().to_string()),
-            tags: None,
+            tags: input
+                .tags
+                .map(|tags| tags.iter().map(|t| t.trim().to_string()).collect()),
         })
     }
 }
