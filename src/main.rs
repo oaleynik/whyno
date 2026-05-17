@@ -20,6 +20,8 @@ struct Args {
 enum Subcmd {
     Add(AddArgs),
     List,
+    Show { id: u64 },
+    Remove { id: u64 },
 }
 
 #[derive(Parser, Debug)]
@@ -117,6 +119,51 @@ fn main() -> Result<()> {
                     }
                     println!();
                 }
+            }
+        }
+        Subcmd::Show { id } => {
+            let wines = load_wines(&data_path)?;
+            if let Some(wine) = wines.iter().find(|w| w.id == id) {
+                println!("{} — {}/5", wine.name, wine.rating.unwrap_or(0));
+                if let Some(producer) = &wine.producer {
+                    println!("Producer: {}", producer);
+                }
+                if let Some(vintage) = wine.vintage {
+                    println!("Vintage: {}", vintage);
+                }
+                if let Some(region) = &wine.region {
+                    let location = if let Some(country) = &wine.country {
+                        format!("{}, {}", region, country)
+                    } else {
+                        region.clone()
+                    };
+                    println!("Region: {}", location);
+                } else if let Some(country) = &wine.country {
+                    println!("Country: {}", country);
+                }
+                if let Some(grapes) = &wine.grapes {
+                    println!("Grapes: {}", grapes.join(", "));
+                }
+                if let Some(notes) = &wine.notes {
+                    println!("Notes: {}", notes);
+                }
+                if let Some(tags) = &wine.tags {
+                    println!("Tags: {}", tags.join(", "));
+                }
+            } else {
+                eprintln!("Error: Wine with ID {} not found", id);
+                std::process::exit(1);
+            }
+        }
+        Subcmd::Remove { id } => {
+            let mut wines = load_wines(&data_path)?;
+            if let Some(pos) = wines.iter().position(|w| w.id == id) {
+                let removed = wines.remove(pos);
+                save_wines(&data_path, &wines)?;
+                println!("Removed wine: {}", removed.name);
+            } else {
+                eprintln!("Error: Wine with ID {} not found", id);
+                std::process::exit(1);
             }
         }
     }
