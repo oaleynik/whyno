@@ -7,6 +7,8 @@ use wine::{Wine, WineInput};
 #[derive(Parser, Debug)]
 #[command(version = "0.1.0", about, long_about = None)]
 struct Args {
+    #[arg(short, long, default_value = "./whyno.json")]
+    data: String,
     #[clap(subcommand)]
     subcommand: Subcmd,
 }
@@ -41,6 +43,7 @@ fn main() -> Result<()> {
 
     match args.subcommand {
         Subcmd::Add(add_args) => {
+            println!("Using data file: {}", args.data);
             let input = WineInput {
                 name: add_args.name.clone(),
                 producer: add_args.producer,
@@ -69,7 +72,10 @@ fn main() -> Result<()> {
                 }
             }
         }
-        Subcmd::List => println!("Listing wines (storage not yet implemented)"),
+        Subcmd::List => println!(
+            "Using data file: {}\nListing wines (storage not yet implemented)",
+            args.data
+        ),
     }
 
     Ok(())
