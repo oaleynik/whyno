@@ -102,7 +102,7 @@ fn main() -> Result<()> {
     match args.subcommand {
         Subcmd::Add(add_args) => {
             let mut wines = load_wines(&data_path)?;
-            let next_id = wines.iter().map(|w| w.id).max().unwrap_or(0) + 1;
+            let next_id = Wine::next_id(&wines);
 
             let input = WineInput {
                 name: add_args.name.clone(),
