@@ -19,9 +19,23 @@ struct Args {
 #[derive(Subcommand, Debug)]
 enum Subcmd {
     Add(AddArgs),
-    List,
+    List(ListArgs),
     Show { id: u64 },
     Remove { id: u64 },
+}
+
+#[derive(Parser, Debug)]
+struct ListArgs {
+    #[arg(long)]
+    tag: Option<String>,
+    #[arg(long)]
+    grape: Option<String>,
+    #[arg(long)]
+    country: Option<String>,
+    #[arg(long)]
+    min_rating: Option<u8>,
+    #[arg(long)]
+    query: Option<String>,
 }
 
 #[derive(Parser, Debug)]
@@ -85,13 +99,84 @@ fn main() -> Result<()> {
                 }
             }
         }
-        Subcmd::List => {
+        Subcmd::List(list_args) => {
             let wines = load_wines(&data_path)?;
-            if wines.is_empty() {
-                println!("No wines found. Add one with `whyno add <name>`");
+            let filtered: Vec<_> = wines
+                .iter()
+                .filter(|wine| {
+                    if let Some(tag) = &list_args.tag {
+                        wine.tags.as_ref().map_or(false, |tags| {
+                            tags.iter().any(|t| t.to_lowercase() == tag.to_lowercase())
+                        })
+                    } else {
+                        true
+                    }
+                })
+                .filter(|wine| {
+                    if let Some(grape) = &list_args.grape {
+                        wine.grapes.as_ref().map_or(false, |grapes| {
+                            grapes
+                                .iter()
+                                .any(|g| g.to_lowercase() == grape.to_lowercase())
+                        })
+                    } else {
+                        true
+                    }
+                })
+                .filter(|wine| {
+                    if let Some(country) = &list_args.country {
+                        wine.country
+                            .as_ref()
+                            .map_or(false, |c| c.to_lowercase() == country.to_lowercase())
+                    } else {
+                        true
+                    }
+                })
+                .filter(|wine| {
+                    if let Some(min_rating) = list_args.min_rating {
+                        wine.rating.map_or(false, |r| r >= min_rating)
+                    } else {
+                        true
+                    }
+                })
+                .filter(|wine| {
+                    if let Some(query) = &list_args.query {
+                        let query_lower = query.to_lowercase();
+                        wine.name.to_lowercase().contains(&query_lower)
+                            || wine
+                                .producer
+                                .as_ref()
+                                .map_or(false, |p| p.to_lowercase().contains(&query_lower))
+                            || wine
+                                .region
+                                .as_ref()
+                                .map_or(false, |r| r.to_lowercase().contains(&query_lower))
+                            || wine
+                                .country
+                                .as_ref()
+                                .map_or(false, |c| c.to_lowercase().contains(&query_lower))
+                            || wine.grapes.as_ref().map_or(false, |g| {
+                                g.iter().any(|gr| gr.to_lowercase().contains(&query_lower))
+                            })
+                            || wine
+                                .notes
+                                .as_ref()
+                                .map_or(false, |n| n.to_lowercase().contains(&query_lower))
+                            || wine.tags.as_ref().map_or(false, |t| {
+                                t.iter()
+                                    .any(|tag| tag.to_lowercase().contains(&query_lower))
+                            })
+                    } else {
+                        true
+                    }
+                })
+                .collect();
+
+            if filtered.is_empty() {
+                println!("No wines found matching criteria. Add one with `whyno add <name>`");
             } else {
-                println!("Found {} wine(s):\n", wines.len());
-                for wine in &wines {
+                println!("Found {} wine(s):\n", filtered.len());
+                for wine in filtered {
                     println!(
                         "{}. {} — {}/5",
                         wine.id,
