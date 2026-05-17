@@ -140,7 +140,7 @@ fn main() -> Result<()> {
                 .iter()
                 .filter(|wine| {
                     if let Some(tag) = &list_args.tag {
-                        wine.tags.as_ref().map_or(false, |tags| {
+                        wine.tags.as_ref().is_some_and(|tags| {
                             tags.iter().any(|t| t.to_lowercase() == tag.to_lowercase())
                         })
                     } else {
@@ -149,7 +149,7 @@ fn main() -> Result<()> {
                 })
                 .filter(|wine| {
                     if let Some(grape) = &list_args.grape {
-                        wine.grapes.as_ref().map_or(false, |grapes| {
+                        wine.grapes.as_ref().is_some_and(|grapes| {
                             grapes
                                 .iter()
                                 .any(|g| g.to_lowercase() == grape.to_lowercase())
@@ -162,14 +162,14 @@ fn main() -> Result<()> {
                     if let Some(country) = &list_args.country {
                         wine.country
                             .as_ref()
-                            .map_or(false, |c| c.to_lowercase() == country.to_lowercase())
+                            .is_some_and(|c| c.to_lowercase() == country.to_lowercase())
                     } else {
                         true
                     }
                 })
                 .filter(|wine| {
                     if let Some(min_rating) = list_args.min_rating {
-                        wine.rating.map_or(false, |r| r >= min_rating)
+                        wine.rating.is_some_and(|r| r >= min_rating)
                     } else {
                         true
                     }
@@ -181,23 +181,23 @@ fn main() -> Result<()> {
                             || wine
                                 .producer
                                 .as_ref()
-                                .map_or(false, |p| p.to_lowercase().contains(&query_lower))
+                                .is_some_and(|p| p.to_lowercase().contains(&query_lower))
                             || wine
                                 .region
                                 .as_ref()
-                                .map_or(false, |r| r.to_lowercase().contains(&query_lower))
+                                .is_some_and(|r| r.to_lowercase().contains(&query_lower))
                             || wine
                                 .country
                                 .as_ref()
-                                .map_or(false, |c| c.to_lowercase().contains(&query_lower))
-                            || wine.grapes.as_ref().map_or(false, |g| {
+                                .is_some_and(|c| c.to_lowercase().contains(&query_lower))
+                            || wine.grapes.as_ref().is_some_and(|g| {
                                 g.iter().any(|gr| gr.to_lowercase().contains(&query_lower))
                             })
                             || wine
                                 .notes
                                 .as_ref()
-                                .map_or(false, |n| n.to_lowercase().contains(&query_lower))
-                            || wine.tags.as_ref().map_or(false, |t| {
+                                .is_some_and(|n| n.to_lowercase().contains(&query_lower))
+                            || wine.tags.as_ref().is_some_and(|t| {
                                 t.iter()
                                     .any(|tag| tag.to_lowercase().contains(&query_lower))
                             })
@@ -285,7 +285,7 @@ fn main() -> Result<()> {
 
                 // Update fields if provided
                 if let Some(vintage) = update_args.vintage {
-                    if vintage < 1900 || vintage > 2100 {
+                    if !(1900..=2100).contains(&vintage) {
                         eprintln!("Error: Vintage must be between 1900 and 2100");
                         std::process::exit(1);
                     }

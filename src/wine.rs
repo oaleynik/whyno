@@ -36,17 +36,17 @@ impl Wine {
         }
 
         // Validate rating
-        if let Some(rating) = input.rating {
-            if !(1..=5).contains(&rating) {
-                bail!("Rating must be between 1 and 5");
-            }
+        if let Some(rating) = input.rating
+            && !(1..=5).contains(&rating)
+        {
+            bail!("Rating must be between 1 and 5");
         }
 
         // Validate vintage (if provided, reasonable range)
-        if let Some(vintage) = input.vintage {
-            if vintage < 1900 || vintage > 2100 {
-                bail!("Vintage must be between 1900 and 2100");
-            }
+        if let Some(vintage) = input.vintage
+            && !(1900..=2100).contains(&vintage)
+        {
+            bail!("Vintage must be between 1900 and 2100");
         }
 
         Ok(Wine {

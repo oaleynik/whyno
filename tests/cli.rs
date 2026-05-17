@@ -70,14 +70,7 @@ fn test_invalid_rating() {
 
     Command::cargo_bin("whyno")
         .unwrap()
-        .args([
-            "--data",
-            data_path,
-            "add",
-            "Bad Rating",
-            "--rating",
-            "99",
-        ])
+        .args(["--data", data_path, "add", "Bad Rating", "--rating", "99"])
         .assert()
         .failure()
         .stderr(predicate::str::contains("Rating must be between 1 and 5"));
@@ -118,14 +111,7 @@ fn test_update_wine() {
 
     Command::cargo_bin("whyno")
         .unwrap()
-        .args([
-            "--data",
-            data_path,
-            "add",
-            "Update Test",
-            "--rating",
-            "3",
-        ])
+        .args(["--data", data_path, "add", "Update Test", "--rating", "3"])
         .assert()
         .success();
 
@@ -195,27 +181,13 @@ fn test_filter_by_min_rating() {
 
     Command::cargo_bin("whyno")
         .unwrap()
-        .args([
-            "--data",
-            data_path,
-            "add",
-            "High Rating",
-            "--rating",
-            "5",
-        ])
+        .args(["--data", data_path, "add", "High Rating", "--rating", "5"])
         .assert()
         .success();
 
     Command::cargo_bin("whyno")
         .unwrap()
-        .args([
-            "--data",
-            data_path,
-            "add",
-            "Low Rating",
-            "--rating",
-            "2",
-        ])
+        .args(["--data", data_path, "add", "Low Rating", "--rating", "2"])
         .assert()
         .success();
 
