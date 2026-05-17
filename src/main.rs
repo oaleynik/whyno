@@ -81,12 +81,43 @@ fn main() -> Result<()> {
             }
         }
         Subcmd::List => {
-            println!("Using data file: {}", args.data);
             let wines = load_wines(&data_path)?;
-            println!(
-                "Loaded {} wines (storage works but list command not yet implemented)",
-                wines.len()
-            );
+            if wines.is_empty() {
+                println!("No wines found. Add one with `whyno add <name>`");
+            } else {
+                println!("Found {} wine(s):\n", wines.len());
+                for wine in &wines {
+                    println!(
+                        "{}. {} — {}/5",
+                        wine.id,
+                        wine.name,
+                        wine.rating.unwrap_or(0)
+                    );
+                    if let Some(producer) = &wine.producer {
+                        println!("   Producer: {}", producer);
+                    }
+                    if let Some(vintage) = wine.vintage {
+                        println!("   Vintage: {}", vintage);
+                    }
+                    if let Some(region) = &wine.region {
+                        let location = if let Some(country) = &wine.country {
+                            format!("{}, {}", region, country)
+                        } else {
+                            region.clone()
+                        };
+                        println!("   Region: {}", location);
+                    } else if let Some(country) = &wine.country {
+                        println!("   Country: {}", country);
+                    }
+                    if let Some(grapes) = &wine.grapes {
+                        println!("   Grapes: {}", grapes.join(", "));
+                    }
+                    if let Some(notes) = &wine.notes {
+                        println!("   Notes: {}", notes);
+                    }
+                    println!();
+                }
+            }
         }
     }
 
