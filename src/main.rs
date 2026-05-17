@@ -48,6 +48,9 @@ fn main() -> Result<()> {
     match args.subcommand {
         Subcmd::Add(add_args) => {
             println!("Using data file: {}", args.data);
+            let mut wines = load_wines(&data_path)?;
+            let next_id = wines.iter().map(|w| w.id).max().unwrap_or(0) + 1;
+
             let input = WineInput {
                 name: add_args.name.clone(),
                 producer: add_args.producer,
@@ -59,16 +62,17 @@ fn main() -> Result<()> {
                 notes: add_args.notes,
             };
 
-            match Wine::from_input(1, input) {
+            match Wine::from_input(next_id, input) {
                 Ok(wine) => {
-                    println!("Validated wine: {} (ID: {})", wine.name, wine.id);
+                    wines.push(wine.clone());
+                    save_wines(&data_path, &wines)?;
+                    println!("Added wine: {} (ID: {})", wine.name, wine.id);
                     if let Some(rating) = wine.rating {
                         println!("  Rating: {}", rating);
                     }
                     if let Some(notes) = &wine.notes {
                         println!("  Notes: {}", notes);
                     }
-                    println!("(Storage not yet implemented)");
                 }
                 Err(e) => {
                     eprintln!("Error: {}", e);
