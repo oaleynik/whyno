@@ -44,7 +44,7 @@ struct ListArgs {
     grape: Option<String>,
     #[arg(long)]
     country: Option<String>,
-    #[arg(long)]
+    #[arg(long, value_parser = clap::value_parser!(u8).range(1..=5))]
     min_rating: Option<u8>,
     #[arg(long)]
     query: Option<String>,
