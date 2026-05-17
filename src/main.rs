@@ -1,7 +1,10 @@
+mod storage;
 mod wine;
 
 use anyhow::Result;
 use clap::{Parser, Subcommand};
+use std::path::PathBuf;
+use storage::{load_wines, save_wines};
 use wine::{Wine, WineInput};
 
 #[derive(Parser, Debug)]
@@ -40,6 +43,7 @@ struct AddArgs {
 
 fn main() -> Result<()> {
     let args = Args::parse();
+    let data_path = PathBuf::from(&args.data);
 
     match args.subcommand {
         Subcmd::Add(add_args) => {
@@ -72,10 +76,14 @@ fn main() -> Result<()> {
                 }
             }
         }
-        Subcmd::List => println!(
-            "Using data file: {}\nListing wines (storage not yet implemented)",
-            args.data
-        ),
+        Subcmd::List => {
+            println!("Using data file: {}", args.data);
+            let wines = load_wines(&data_path)?;
+            println!(
+                "Loaded {} wines (storage works but list command not yet implemented)",
+                wines.len()
+            );
+        }
     }
 
     Ok(())
