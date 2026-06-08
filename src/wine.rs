@@ -7,6 +7,12 @@ pub struct Wine {
     pub name: String,
     pub producer: Option<String>,
     pub vintage: Option<u32>,
+    #[serde(default)]
+    pub price: Option<f32>,
+    #[serde(default)]
+    pub purchase_date: Option<String>,
+    #[serde(default)]
+    pub drink_by: Option<String>,
     pub region: Option<String>,
     pub country: Option<String>,
     pub grapes: Option<Vec<String>>,
@@ -20,6 +26,9 @@ pub struct WineInput {
     pub name: String,
     pub producer: Option<String>,
     pub vintage: Option<u32>,
+    pub price: Option<f32>,
+    pub purchase_date: Option<String>,
+    pub drink_by: Option<String>,
     pub region: Option<String>,
     pub country: Option<String>,
     pub grape: Option<String>,
@@ -53,11 +62,27 @@ impl Wine {
             bail!("Vintage must be between 1900 and 2100");
         }
 
+        // Validate price
+        if let Some(price) = input.price {
+            if !price.is_finite() {
+                bail!("Price must be finite");
+            }
+            if price < 0.0 {
+                bail!("Price must be non-negative");
+            }
+        }
+
+        let purchase_date = normalize_optional_date(input.purchase_date, "Purchase date")?;
+        let drink_by = normalize_optional_date(input.drink_by, "Drink-by date")?;
+
         Ok(Wine {
             id,
             name: input.name.trim().to_string(),
             producer: input.producer.map(|s| s.trim().to_string()),
             vintage: input.vintage,
+            price: input.price,
+            purchase_date,
+            drink_by,
             region: input.region.map(|s| s.trim().to_string()),
             country: input.country.map(|s| s.trim().to_string()),
             grapes: input.grape.map(|g| vec![g.trim().to_string()]),
@@ -70,6 +95,17 @@ impl Wine {
     }
 }
 
+fn normalize_optional_date(date: Option<String>, field_name: &str) -> Result<Option<String>> {
+    date.map(|s| {
+        let trimmed = s.trim();
+        if trimmed.is_empty() {
+            bail!("{} cannot be empty", field_name);
+        }
+        Ok(trimmed.to_string())
+    })
+    .transpose()
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -80,6 +116,9 @@ mod tests {
             name: "   ".to_string(),
             producer: None,
             vintage: None,
+            price: None,
+            purchase_date: None,
+            drink_by: None,
             region: None,
             country: None,
             grape: None,
@@ -99,6 +138,9 @@ mod tests {
             name: "Test Wine".to_string(),
             producer: None,
             vintage: None,
+            price: None,
+            purchase_date: None,
+            drink_by: None,
             region: None,
             country: None,
             grape: None,
@@ -121,6 +163,9 @@ mod tests {
             name: "Test Wine".to_string(),
             producer: None,
             vintage: Some(1899),
+            price: None,
+            purchase_date: None,
+            drink_by: None,
             region: None,
             country: None,
             grape: None,
@@ -143,6 +188,9 @@ mod tests {
             name: "  Test Wine  ".to_string(),
             producer: Some("  Test Producer  ".to_string()),
             vintage: Some(2020),
+            price: None,
+            purchase_date: None,
+            drink_by: None,
             region: Some("  Napa Valley  ".to_string()),
             country: Some("  USA  ".to_string()),
             grape: Some("  Cabernet Sauvignon  ".to_string()),
@@ -165,6 +213,149 @@ mod tests {
     }
 
     #[test]
+    fn test_valid_wine_creation_with_richer_fields() {
+        let input = WineInput {
+            name: "Test Wine".to_string(),
+            producer: None,
+            vintage: None,
+            price: Some(42.50),
+            purchase_date: Some(" 2024-06-01 ".to_string()),
+            drink_by: Some(" 2030-01-01 ".to_string()),
+            region: None,
+            country: None,
+            grape: None,
+            rating: None,
+            notes: None,
+            tags: None,
+        };
+
+        let wine = Wine::from_input(42, input).unwrap();
+        assert_eq!(wine.price, Some(42.50));
+        assert_eq!(wine.purchase_date, Some("2024-06-01".to_string()));
+        assert_eq!(wine.drink_by, Some("2030-01-01".to_string()));
+    }
+
+    #[test]
+    fn test_negative_price_validation() {
+        let input = WineInput {
+            name: "Test Wine".to_string(),
+            producer: None,
+            vintage: None,
+            price: Some(-1.0),
+            purchase_date: None,
+            drink_by: None,
+            region: None,
+            country: None,
+            grape: None,
+            rating: None,
+            notes: None,
+            tags: None,
+        };
+
+        let result = Wine::from_input(1, input);
+        assert!(result.is_err());
+        assert_eq!(
+            result.unwrap_err().to_string(),
+            "Price must be non-negative"
+        );
+    }
+
+    #[test]
+    fn test_non_finite_price_validation() {
+        let input = WineInput {
+            name: "Test Wine".to_string(),
+            producer: None,
+            vintage: None,
+            price: Some(f32::NAN),
+            purchase_date: None,
+            drink_by: None,
+            region: None,
+            country: None,
+            grape: None,
+            rating: None,
+            notes: None,
+            tags: None,
+        };
+
+        let result = Wine::from_input(1, input);
+        assert!(result.is_err());
+        assert_eq!(result.unwrap_err().to_string(), "Price must be finite");
+    }
+
+    #[test]
+    fn test_empty_purchase_date_validation() {
+        let input = WineInput {
+            name: "Test Wine".to_string(),
+            producer: None,
+            vintage: None,
+            price: None,
+            purchase_date: Some("   ".to_string()),
+            drink_by: None,
+            region: None,
+            country: None,
+            grape: None,
+            rating: None,
+            notes: None,
+            tags: None,
+        };
+
+        let result = Wine::from_input(1, input);
+        assert!(result.is_err());
+        assert_eq!(
+            result.unwrap_err().to_string(),
+            "Purchase date cannot be empty"
+        );
+    }
+
+    #[test]
+    fn test_empty_drink_by_validation() {
+        let input = WineInput {
+            name: "Test Wine".to_string(),
+            producer: None,
+            vintage: None,
+            price: None,
+            purchase_date: None,
+            drink_by: Some("   ".to_string()),
+            region: None,
+            country: None,
+            grape: None,
+            rating: None,
+            notes: None,
+            tags: None,
+        };
+
+        let result = Wine::from_input(1, input);
+        assert!(result.is_err());
+        assert_eq!(
+            result.unwrap_err().to_string(),
+            "Drink-by date cannot be empty"
+        );
+    }
+
+    #[test]
+    fn test_deserialize_wine_without_richer_fields() {
+        let wine: Wine = serde_json::from_str(
+            r#"{
+                "id": 1,
+                "name": "Cellar Classic",
+                "producer": null,
+                "vintage": null,
+                "region": null,
+                "country": null,
+                "grapes": null,
+                "rating": null,
+                "notes": null,
+                "tags": null
+            }"#,
+        )
+        .unwrap();
+
+        assert_eq!(wine.price, None);
+        assert_eq!(wine.purchase_date, None);
+        assert_eq!(wine.drink_by, None);
+    }
+
+    #[test]
     fn test_next_id_empty() {
         assert_eq!(Wine::next_id(&[]), 1);
     }
@@ -176,6 +367,9 @@ mod tests {
             name: "Test".to_string(),
             producer: None,
             vintage: None,
+            price: None,
+            purchase_date: None,
+            drink_by: None,
             region: None,
             country: None,
             grapes: None,
@@ -194,6 +388,9 @@ mod tests {
                 name: "Test 1".to_string(),
                 producer: None,
                 vintage: None,
+                price: None,
+                purchase_date: None,
+                drink_by: None,
                 region: None,
                 country: None,
                 grapes: None,
@@ -206,6 +403,9 @@ mod tests {
                 name: "Test 3".to_string(),
                 producer: None,
                 vintage: None,
+                price: None,
+                purchase_date: None,
+                drink_by: None,
                 region: None,
                 country: None,
                 grapes: None,
@@ -218,6 +418,9 @@ mod tests {
                 name: "Test 2".to_string(),
                 producer: None,
                 vintage: None,
+                price: None,
+                purchase_date: None,
+                drink_by: None,
                 region: None,
                 country: None,
                 grapes: None,
