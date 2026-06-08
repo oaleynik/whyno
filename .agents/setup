@@ -3,6 +3,7 @@ set -euo pipefail
 
 repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$repo_root"
+setup_complete_marker="$repo_root/.agents/setup-complete"
 
 export CARGO_TERM_COLOR="${CARGO_TERM_COLOR:-always}"
 export CARGO_INCREMENTAL="${CARGO_INCREMENTAL:-0}"
@@ -72,3 +73,4 @@ cargo clippy --all-targets --all-features --locked -- -D warnings
 cargo test --locked
 
 echo "Rust environment is ready for whyno."
+printf 'setup completed at %s\n' "$(date -u '+%Y-%m-%dT%H:%M:%SZ')" > "$setup_complete_marker"
