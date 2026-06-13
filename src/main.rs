@@ -34,6 +34,7 @@ enum Subcmd {
     Show { id: u64 },
     Update(UpdateArgs),
     Remove { id: u64 },
+    Stats,
 }
 
 #[derive(Parser, Debug)]
@@ -346,6 +347,28 @@ fn main() -> Result<()> {
             } else {
                 eprintln!("Error: Wine with ID {} not found", id);
                 std::process::exit(1);
+            }
+        }
+        Subcmd::Stats => {
+            let wines = load_wines(&data_path)?;
+            let count = wines.len();
+
+            if count > 0 {
+                let sum: f64 = wines
+                    .iter()
+                    .filter_map(|w| w.rating)
+                    .map(|r| r as f64)
+                    .sum();
+                let rated_count = wines.iter().filter(|w| w.rating.is_some()).count();
+                let avg = if rated_count > 0 {
+                    sum / rated_count as f64
+                } else {
+                    0.0
+                };
+                println!("Total wines saved: {}", count);
+                println!("Average rating: {:.2}", avg);
+            } else {
+                println!("No wines saved yet.");
             }
         }
     }

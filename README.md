@@ -75,6 +75,14 @@ whyno update 1 --tag special,aged
 whyno remove 1
 ```
 
+### View statistics
+
+```bash
+whyno stats
+```
+
+Shows total wines saved and average rating across all rated wines.
+
 ### Use a custom data file
 
 ```bash
@@ -130,6 +138,7 @@ Wine data is stored as JSON. You can manually edit the file if needed:
 - `show <id>` - Show details of a specific wine
 - `update <id>` - Update a wine's details
 - `remove <id>` - Remove a wine
+- `stats` - Show wine collection statistics
 - `--data <path>` - Use a custom data file (global option)
 
 ### Options for `add` and `update`
@@ -179,4 +188,7 @@ whyno list --query napa
 
 # Update a wine with more notes
 whyno update 1 --notes "Even better after decanting for 2 hours"
+
+# View collection stats
+whyno stats
 ```

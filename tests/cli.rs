@@ -201,6 +201,45 @@ fn test_filter_by_min_rating() {
 }
 
 #[test]
+fn test_stats_empty() {
+    let temp_file = NamedTempFile::new().unwrap();
+    let data_path = temp_file.path().to_str().unwrap();
+
+    Command::cargo_bin("whyno")
+        .unwrap()
+        .args(["--data", data_path, "stats"])
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("No wines saved yet"));
+}
+
+#[test]
+fn test_stats_with_wines() {
+    let temp_file = NamedTempFile::new().unwrap();
+    let data_path = temp_file.path().to_str().unwrap();
+
+    Command::cargo_bin("whyno")
+        .unwrap()
+        .args(["--data", data_path, "add", "Wine A", "--rating", "4"])
+        .assert()
+        .success();
+
+    Command::cargo_bin("whyno")
+        .unwrap()
+        .args(["--data", data_path, "add", "Wine B", "--rating", "2"])
+        .assert()
+        .success();
+
+    Command::cargo_bin("whyno")
+        .unwrap()
+        .args(["--data", data_path, "stats"])
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("Total wines saved: 2"))
+        .stdout(predicate::str::contains("Average rating: 3.00"));
+}
+
+#[test]
 fn test_tags() {
     let temp_file = NamedTempFile::new().unwrap();
     let data_path = temp_file.path().to_str().unwrap();
