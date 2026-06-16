@@ -2,3 +2,4 @@
 /.agents/setup-complete
 /tmp-wines.json
 *.json.bak
+.env
