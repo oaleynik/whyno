@@ -38,9 +38,12 @@ pub fn save_wines(path: &Path, wines: &[Wine]) -> Result<()> {
 
     let mut temp_file = NamedTempFile::new_in(parent)
         .with_context(|| format!("Failed to create temporary file for {}", path.display()))?;
-    temp_file
-        .write_all(json.as_bytes())
-        .with_context(|| format!("Failed to write wine data to {}", temp_file.path().display()))?;
+    temp_file.write_all(json.as_bytes()).with_context(|| {
+        format!(
+            "Failed to write wine data to {}",
+            temp_file.path().display()
+        )
+    })?;
     temp_file
         .as_file_mut()
         .sync_all()
@@ -59,8 +62,8 @@ mod tests {
 
     #[test]
     fn test_load_missing_file() {
-        let temp_file = NamedTempFile::new().unwrap();
-        let path = temp_file.path().join("nonexistent.json");
+        let temp_dir = tempfile::tempdir().unwrap();
+        let path = temp_dir.path().join("nonexistent.json");
         assert!(!path.exists());
 
         let result = load_wines(&path);

@@ -250,7 +250,11 @@ mod tests {
             grape: Some("   ".to_string()),
             rating: None,
             notes: Some("   ".to_string()),
-            tags: Some(vec!["  ".to_string(), " favorite ".to_string(), "".to_string()]),
+            tags: Some(vec![
+                "  ".to_string(),
+                " favorite ".to_string(),
+                "".to_string(),
+            ]),
         };
 
         let wine = Wine::from_input(42, input).unwrap();
