@@ -9,7 +9,7 @@ use storage::{load_wines, save_wines};
 use wine::{Wine, WineInput, normalize_optional_text, normalize_optional_text_vec};
 
 #[derive(Parser, Debug)]
-#[command(version = "0.1.0", about, long_about = None)]
+#[command(version, about, long_about = None)]
 struct Args {
     #[arg(short, long)]
     data: Option<String>,
