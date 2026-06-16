@@ -1,11 +1,17 @@
 use assert_cmd::Command;
 use predicates::prelude::*;
-use tempfile::NamedTempFile;
+use tempfile::TempDir;
+
+fn temp_data_path() -> (TempDir, String) {
+    let temp_dir = tempfile::tempdir().unwrap();
+    let data_path = temp_dir.path().join("wines.json");
+    (temp_dir, data_path.to_str().unwrap().to_string())
+}
 
 #[test]
 fn test_add_and_list() {
-    let temp_file = NamedTempFile::new().unwrap();
-    let data_path = temp_file.path().to_str().unwrap();
+    let (_temp_dir, data_path) = temp_data_path();
+    let data_path = data_path.as_str();
 
     Command::cargo_bin("whyno")
         .unwrap()
@@ -23,8 +29,8 @@ fn test_add_and_list() {
 
 #[test]
 fn test_add_and_show() {
-    let temp_file = NamedTempFile::new().unwrap();
-    let data_path = temp_file.path().to_str().unwrap();
+    let (_temp_dir, data_path) = temp_data_path();
+    let data_path = data_path.as_str();
 
     Command::cargo_bin("whyno")
         .unwrap()
@@ -52,8 +58,8 @@ fn test_add_and_show() {
 
 #[test]
 fn test_add_and_update_richer_fields() {
-    let temp_file = NamedTempFile::new().unwrap();
-    let data_path = temp_file.path().to_str().unwrap();
+    let (_temp_dir, data_path) = temp_data_path();
+    let data_path = data_path.as_str();
 
     Command::cargo_bin("whyno")
         .unwrap()
@@ -107,8 +113,8 @@ fn test_add_and_update_richer_fields() {
 
 #[test]
 fn test_remove_missing_id() {
-    let temp_file = NamedTempFile::new().unwrap();
-    let data_path = temp_file.path().to_str().unwrap();
+    let (_temp_dir, data_path) = temp_data_path();
+    let data_path = data_path.as_str();
 
     Command::cargo_bin("whyno")
         .unwrap()
@@ -120,8 +126,8 @@ fn test_remove_missing_id() {
 
 #[test]
 fn test_invalid_rating() {
-    let temp_file = NamedTempFile::new().unwrap();
-    let data_path = temp_file.path().to_str().unwrap();
+    let (_temp_dir, data_path) = temp_data_path();
+    let data_path = data_path.as_str();
 
     Command::cargo_bin("whyno")
         .unwrap()
@@ -133,10 +139,10 @@ fn test_invalid_rating() {
 
 #[test]
 fn test_corrupt_json() {
-    let temp_file = NamedTempFile::new().unwrap();
-    let data_path = temp_file.path().to_str().unwrap();
+    let (_temp_dir, data_path) = temp_data_path();
+    let data_path = data_path.as_str();
 
-    std::fs::write(temp_file.path(), "not json").unwrap();
+    std::fs::write(data_path, "not json").unwrap();
 
     Command::cargo_bin("whyno")
         .unwrap()
@@ -148,8 +154,8 @@ fn test_corrupt_json() {
 
 #[test]
 fn test_empty_name() {
-    let temp_file = NamedTempFile::new().unwrap();
-    let data_path = temp_file.path().to_str().unwrap();
+    let (_temp_dir, data_path) = temp_data_path();
+    let data_path = data_path.as_str();
 
     Command::cargo_bin("whyno")
         .unwrap()
@@ -161,8 +167,8 @@ fn test_empty_name() {
 
 #[test]
 fn test_update_wine() {
-    let temp_file = NamedTempFile::new().unwrap();
-    let data_path = temp_file.path().to_str().unwrap();
+    let (_temp_dir, data_path) = temp_data_path();
+    let data_path = data_path.as_str();
 
     Command::cargo_bin("whyno")
         .unwrap()
@@ -187,8 +193,8 @@ fn test_update_wine() {
 
 #[test]
 fn test_filter_by_country() {
-    let temp_file = NamedTempFile::new().unwrap();
-    let data_path = temp_file.path().to_str().unwrap();
+    let (_temp_dir, data_path) = temp_data_path();
+    let data_path = data_path.as_str();
 
     Command::cargo_bin("whyno")
         .unwrap()
@@ -231,8 +237,8 @@ fn test_filter_by_country() {
 
 #[test]
 fn test_filter_by_min_rating() {
-    let temp_file = NamedTempFile::new().unwrap();
-    let data_path = temp_file.path().to_str().unwrap();
+    let (_temp_dir, data_path) = temp_data_path();
+    let data_path = data_path.as_str();
 
     Command::cargo_bin("whyno")
         .unwrap()
@@ -257,8 +263,8 @@ fn test_filter_by_min_rating() {
 
 #[test]
 fn test_stats_empty() {
-    let temp_file = NamedTempFile::new().unwrap();
-    let data_path = temp_file.path().to_str().unwrap();
+    let (_temp_dir, data_path) = temp_data_path();
+    let data_path = data_path.as_str();
 
     Command::cargo_bin("whyno")
         .unwrap()
@@ -270,8 +276,8 @@ fn test_stats_empty() {
 
 #[test]
 fn test_stats_with_unrated_wines() {
-    let temp_file = NamedTempFile::new().unwrap();
-    let data_path = temp_file.path().to_str().unwrap();
+    let (_temp_dir, data_path) = temp_data_path();
+    let data_path = data_path.as_str();
 
     Command::cargo_bin("whyno")
         .unwrap()
@@ -290,8 +296,8 @@ fn test_stats_with_unrated_wines() {
 
 #[test]
 fn test_stats_with_wines() {
-    let temp_file = NamedTempFile::new().unwrap();
-    let data_path = temp_file.path().to_str().unwrap();
+    let (_temp_dir, data_path) = temp_data_path();
+    let data_path = data_path.as_str();
 
     Command::cargo_bin("whyno")
         .unwrap()
@@ -316,8 +322,8 @@ fn test_stats_with_wines() {
 
 #[test]
 fn test_tags() {
-    let temp_file = NamedTempFile::new().unwrap();
-    let data_path = temp_file.path().to_str().unwrap();
+    let (_temp_dir, data_path) = temp_data_path();
+    let data_path = data_path.as_str();
 
     Command::cargo_bin("whyno")
         .unwrap()

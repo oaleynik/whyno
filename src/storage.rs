@@ -80,7 +80,8 @@ mod tests {
 
     #[test]
     fn test_save_load_roundtrip() {
-        let temp_file = NamedTempFile::new().unwrap();
+        let temp_dir = tempfile::tempdir().unwrap();
+        let path = temp_dir.path().join("wines.json");
         let wines = vec![
             Wine {
                 id: 1,
@@ -115,10 +116,10 @@ mod tests {
         ];
 
         // Save
-        save_wines(temp_file.path(), &wines).unwrap();
+        save_wines(&path, &wines).unwrap();
 
         // Load
-        let loaded = load_wines(temp_file.path()).unwrap();
+        let loaded = load_wines(&path).unwrap();
         assert_eq!(loaded.len(), 2);
         assert_eq!(loaded[0].id, 1);
         assert_eq!(loaded[0].name, "Test Wine");
