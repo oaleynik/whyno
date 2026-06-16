@@ -75,23 +75,47 @@ impl Wine {
         let purchase_date = normalize_optional_date(input.purchase_date, "Purchase date")?;
         let drink_by = normalize_optional_date(input.drink_by, "Drink-by date")?;
 
+        let grape = normalize_optional_text(input.grape);
+
         Ok(Wine {
             id,
             name: input.name.trim().to_string(),
-            producer: input.producer.map(|s| s.trim().to_string()),
+            producer: normalize_optional_text(input.producer),
             vintage: input.vintage,
             price: input.price,
             purchase_date,
             drink_by,
-            region: input.region.map(|s| s.trim().to_string()),
-            country: input.country.map(|s| s.trim().to_string()),
-            grapes: input.grape.map(|g| vec![g.trim().to_string()]),
+            region: normalize_optional_text(input.region),
+            country: normalize_optional_text(input.country),
+            grapes: grape.map(|g| vec![g]),
             rating: input.rating,
-            notes: input.notes.map(|s| s.trim().to_string()),
-            tags: input
-                .tags
-                .map(|tags| tags.iter().map(|t| t.trim().to_string()).collect()),
+            notes: normalize_optional_text(input.notes),
+            tags: normalize_optional_text_vec(input.tags),
         })
+    }
+}
+
+pub fn normalize_optional_text(text: Option<String>) -> Option<String> {
+    text.and_then(|s| {
+        let trimmed = s.trim();
+        if trimmed.is_empty() {
+            None
+        } else {
+            Some(trimmed.to_string())
+        }
+    })
+}
+
+pub fn normalize_optional_text_vec(texts: Option<Vec<String>>) -> Option<Vec<String>> {
+    let normalized: Vec<_> = texts?
+        .into_iter()
+        .filter_map(|text| normalize_optional_text(Some(text)))
+        .collect();
+
+    if normalized.is_empty() {
+        None
+    } else {
+        Some(normalized)
     }
 }
 
@@ -210,6 +234,32 @@ mod tests {
         assert_eq!(wine.rating, Some(4));
         assert_eq!(wine.notes, Some("Great wine".to_string()));
         assert_eq!(wine.tags, Some(vec!["red".to_string(), "bold".to_string()]));
+    }
+
+    #[test]
+    fn test_blank_optional_text_fields_are_omitted() {
+        let input = WineInput {
+            name: "Test Wine".to_string(),
+            producer: Some("   ".to_string()),
+            vintage: None,
+            price: None,
+            purchase_date: None,
+            drink_by: None,
+            region: Some("   ".to_string()),
+            country: Some("   ".to_string()),
+            grape: Some("   ".to_string()),
+            rating: None,
+            notes: Some("   ".to_string()),
+            tags: Some(vec!["  ".to_string(), " favorite ".to_string(), "".to_string()]),
+        };
+
+        let wine = Wine::from_input(42, input).unwrap();
+        assert_eq!(wine.producer, None);
+        assert_eq!(wine.region, None);
+        assert_eq!(wine.country, None);
+        assert_eq!(wine.grapes, None);
+        assert_eq!(wine.notes, None);
+        assert_eq!(wine.tags, Some(vec!["favorite".to_string()]));
     }
 
     #[test]

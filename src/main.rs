@@ -6,7 +6,7 @@ use clap::{Parser, Subcommand};
 use directories::ProjectDirs;
 use std::path::PathBuf;
 use storage::{load_wines, save_wines};
-use wine::{Wine, WineInput};
+use wine::{Wine, WineInput, normalize_optional_text, normalize_optional_text_vec};
 
 #[derive(Parser, Debug)]
 #[command(version = "0.1.0", about, long_about = None)]
@@ -336,7 +336,7 @@ fn main() -> Result<()> {
                     wine.vintage = Some(vintage);
                 }
                 if let Some(producer) = update_args.producer {
-                    wine.producer = Some(producer.trim().to_string());
+                    wine.producer = normalize_optional_text(Some(producer));
                 }
                 if let Some(price) = update_args.price {
                     if !price.is_finite() {
@@ -366,13 +366,13 @@ fn main() -> Result<()> {
                     wine.drink_by = Some(drink_by.to_string());
                 }
                 if let Some(region) = update_args.region {
-                    wine.region = Some(region.trim().to_string());
+                    wine.region = normalize_optional_text(Some(region));
                 }
                 if let Some(country) = update_args.country {
-                    wine.country = Some(country.trim().to_string());
+                    wine.country = normalize_optional_text(Some(country));
                 }
                 if let Some(grape) = update_args.grape {
-                    wine.grapes = Some(vec![grape.trim().to_string()]);
+                    wine.grapes = normalize_optional_text(Some(grape)).map(|grape| vec![grape]);
                 }
                 if let Some(rating) = update_args.rating {
                     if !(1..=5).contains(&rating) {
@@ -382,10 +382,10 @@ fn main() -> Result<()> {
                     wine.rating = Some(rating);
                 }
                 if let Some(notes) = update_args.notes {
-                    wine.notes = Some(notes.trim().to_string());
+                    wine.notes = normalize_optional_text(Some(notes));
                 }
                 if let Some(tags) = update_args.tag {
-                    wine.tags = Some(tags.iter().map(|t| t.trim().to_string()).collect());
+                    wine.tags = normalize_optional_text_vec(Some(tags));
                 }
 
                 let wine_name = wine.name.clone();
