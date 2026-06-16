@@ -360,13 +360,12 @@ fn main() -> Result<()> {
                     .map(|r| r as f64)
                     .sum();
                 let rated_count = wines.iter().filter(|w| w.rating.is_some()).count();
-                let avg = if rated_count > 0 {
-                    sum / rated_count as f64
-                } else {
-                    0.0
-                };
                 println!("Total wines saved: {}", count);
-                println!("Average rating: {:.2}", avg);
+                if rated_count > 0 {
+                    println!("Average rating: {:.2}", sum / rated_count as f64);
+                } else {
+                    println!("Average rating: N/A (no rated wines)");
+                }
             } else {
                 println!("No wines saved yet.");
             }

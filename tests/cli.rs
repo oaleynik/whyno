@@ -214,6 +214,26 @@ fn test_stats_empty() {
 }
 
 #[test]
+fn test_stats_with_unrated_wines() {
+    let temp_file = NamedTempFile::new().unwrap();
+    let data_path = temp_file.path().to_str().unwrap();
+
+    Command::cargo_bin("whyno")
+        .unwrap()
+        .args(["--data", data_path, "add", "Unrated Wine"])
+        .assert()
+        .success();
+
+    Command::cargo_bin("whyno")
+        .unwrap()
+        .args(["--data", data_path, "stats"])
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("Total wines saved: 1"))
+        .stdout(predicate::str::contains("Average rating: N/A"));
+}
+
+#[test]
 fn test_stats_with_wines() {
     let temp_file = NamedTempFile::new().unwrap();
     let data_path = temp_file.path().to_str().unwrap();
