@@ -168,7 +168,7 @@ Wine data is stored as JSON. You can manually edit the file if needed:
 - `--grape <name>` - Filter by grape variety
 - `--country <name>` - Filter by country
 - `--min-rating <1-5>` - Filter by minimum rating
-- `--query <text>` - Search across all fields
+- `--query <text>` - Search across text fields
 
 ## Examples
 
