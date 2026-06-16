@@ -98,9 +98,9 @@ whyno --data ./my-wines.json list
 
 By default, whyno stores wine data in a platform-appropriate location:
 
-- **macOS**: `~/Library/Application Support/whyno/whyno/wines.json`
-- **Linux**: `~/.local/share/whyno/whyno/wines.json`
-- **Windows**: `%APPDATA%\whyno\whyno\wines.json`
+- **macOS**: `~/Library/Application Support/com.whyno.whyno/wines.json`
+- **Linux**: `~/.local/share/whyno/wines.json` (or `$XDG_DATA_HOME/whyno/wines.json`)
+- **Windows**: `%APPDATA%\whyno\whyno\data\wines.json`
 
 Use the `--data` flag to specify a custom location.
 
