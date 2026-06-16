@@ -1,6 +1,8 @@
 use anyhow::{Context, Result};
 use std::fs;
+use std::io::Write;
 use std::path::Path;
+use tempfile::NamedTempFile;
 
 use crate::wine::Wine;
 
@@ -24,15 +26,30 @@ pub fn load_wines(path: &Path) -> Result<Vec<Wine>> {
 }
 
 pub fn save_wines(path: &Path, wines: &[Wine]) -> Result<()> {
-    if let Some(parent) = path.parent() {
-        fs::create_dir_all(parent)
-            .with_context(|| format!("Failed to create directory for {}", path.display()))?;
-    }
+    let parent = path
+        .parent()
+        .filter(|parent| !parent.as_os_str().is_empty())
+        .unwrap_or_else(|| Path::new("."));
+
+    fs::create_dir_all(parent)
+        .with_context(|| format!("Failed to create directory for {}", path.display()))?;
 
     let json = serde_json::to_string_pretty(wines).context("Failed to serialize wine data")?;
 
-    fs::write(path, json)
-        .with_context(|| format!("Failed to write wine data to {}", path.display()))
+    let mut temp_file = NamedTempFile::new_in(parent)
+        .with_context(|| format!("Failed to create temporary file for {}", path.display()))?;
+    temp_file
+        .write_all(json.as_bytes())
+        .with_context(|| format!("Failed to write wine data to {}", temp_file.path().display()))?;
+    temp_file
+        .as_file_mut()
+        .sync_all()
+        .with_context(|| format!("Failed to flush wine data for {}", path.display()))?;
+    temp_file
+        .persist(path)
+        .map(|_| ())
+        .map_err(|error| error.error)
+        .with_context(|| format!("Failed to replace wine data at {}", path.display()))
 }
 
 #[cfg(test)]
