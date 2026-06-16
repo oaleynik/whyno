@@ -22,6 +22,9 @@ cargo run -- <command> [args]
 whyno add "Château Margaux" \
   --vintage 2018 \
   --producer "Château Margaux" \
+  --price 250.00 \
+  --purchase-date 2024-06-01 \
+  --drink-by 2035-01-01 \
   --region "Margaux" \
   --country "France" \
   --grape Cabernet \
@@ -66,6 +69,7 @@ whyno show 1
 ```bash
 whyno update 1 --rating 5
 whyno update 1 --notes "Better on day two"
+whyno update 1 --price 42.50 --purchase-date 2024-06-01
 whyno update 1 --tag special,aged
 ```
 
@@ -121,6 +125,9 @@ Wine data is stored as JSON. You can manually edit the file if needed:
     "name": "Château Margaux",
     "producer": "Château Margaux",
     "vintage": 2018,
+    "price": 250.0,
+    "purchase_date": "2024-06-01",
+    "drink_by": "2035-01-01",
     "region": "Margaux",
     "country": "France",
     "grapes": ["Cabernet"],
@@ -145,6 +152,9 @@ Wine data is stored as JSON. You can manually edit the file if needed:
 
 - `-v, --vintage <year>` - Wine vintage
 - `-p, --producer <name>` - Producer/winery name
+- `--price <amount>` - Purchase price
+- `--purchase-date <date>` - Purchase date
+- `--drink-by <date>` - Target drink-by date
 - `--region <name>` - Region
 - `-c, --country <name>` - Country
 - `-g, --grape <name>` - Grape variety
@@ -170,6 +180,9 @@ whyno add "Everyday Red" --rating 3
 whyno add "Opus One" \
   --vintage 2015 \
   --producer "Opus One" \
+  --price 399.99 \
+  --purchase-date 2024-06-01 \
+  --drink-by 2035-01-01 \
   --region "Napa Valley" \
   --country "USA" \
   --grape Cabernet \

@@ -51,6 +51,61 @@ fn test_add_and_show() {
 }
 
 #[test]
+fn test_add_and_update_richer_fields() {
+    let temp_file = NamedTempFile::new().unwrap();
+    let data_path = temp_file.path().to_str().unwrap();
+
+    Command::cargo_bin("whyno")
+        .unwrap()
+        .args([
+            "--data",
+            data_path,
+            "add",
+            "Cellar Wine",
+            "--price",
+            "42.50",
+            "--purchase-date",
+            "2024-06-01",
+            "--drink-by",
+            "2030-01-01",
+        ])
+        .assert()
+        .success();
+
+    Command::cargo_bin("whyno")
+        .unwrap()
+        .args(["--data", data_path, "show", "1"])
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("Price: 42.50"))
+        .stdout(predicate::str::contains("Purchase date: 2024-06-01"))
+        .stdout(predicate::str::contains("Drink by: 2030-01-01"));
+
+    Command::cargo_bin("whyno")
+        .unwrap()
+        .args([
+            "--data",
+            data_path,
+            "update",
+            "1",
+            "--price",
+            "50",
+            "--drink-by",
+            "2032-01-01",
+        ])
+        .assert()
+        .success();
+
+    Command::cargo_bin("whyno")
+        .unwrap()
+        .args(["--data", data_path, "show", "1"])
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("Price: 50.00"))
+        .stdout(predicate::str::contains("Drink by: 2032-01-01"));
+}
+
+#[test]
 fn test_remove_missing_id() {
     let temp_file = NamedTempFile::new().unwrap();
     let data_path = temp_file.path().to_str().unwrap();

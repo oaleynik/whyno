@@ -57,6 +57,12 @@ struct AddArgs {
     #[arg(short, long)]
     producer: Option<String>,
     #[arg(long)]
+    price: Option<f32>,
+    #[arg(long)]
+    purchase_date: Option<String>,
+    #[arg(long)]
+    drink_by: Option<String>,
+    #[arg(long)]
     region: Option<String>,
     #[arg(short, long)]
     country: Option<String>,
@@ -77,6 +83,12 @@ struct UpdateArgs {
     vintage: Option<u32>,
     #[arg(short, long)]
     producer: Option<String>,
+    #[arg(long)]
+    price: Option<f32>,
+    #[arg(long)]
+    purchase_date: Option<String>,
+    #[arg(long)]
+    drink_by: Option<String>,
     #[arg(long)]
     region: Option<String>,
     #[arg(short, long)]
@@ -107,9 +119,9 @@ fn main() -> Result<()> {
                 name: add_args.name.clone(),
                 producer: add_args.producer,
                 vintage: add_args.vintage,
-                price: None,
-                purchase_date: None,
-                drink_by: None,
+                price: add_args.price,
+                purchase_date: add_args.purchase_date,
+                drink_by: add_args.drink_by,
                 region: add_args.region,
                 country: add_args.country,
                 grape: add_args.grape,
@@ -125,6 +137,9 @@ fn main() -> Result<()> {
                     println!("Added wine: {} (ID: {})", wine.name, wine.id);
                     if let Some(rating) = wine.rating {
                         println!("  Rating: {}", rating);
+                    }
+                    if let Some(price) = wine.price {
+                        println!("  Price: {:.2}", price);
                     }
                     if let Some(notes) = &wine.notes {
                         println!("  Notes: {}", notes);
@@ -228,6 +243,15 @@ fn main() -> Result<()> {
                     if let Some(vintage) = wine.vintage {
                         println!("   Vintage: {}", vintage);
                     }
+                    if let Some(price) = wine.price {
+                        println!("   Price: {:.2}", price);
+                    }
+                    if let Some(purchase_date) = &wine.purchase_date {
+                        println!("   Purchase date: {}", purchase_date);
+                    }
+                    if let Some(drink_by) = &wine.drink_by {
+                        println!("   Drink by: {}", drink_by);
+                    }
                     if let Some(region) = &wine.region {
                         let location = if let Some(country) = &wine.country {
                             format!("{}, {}", region, country)
@@ -264,6 +288,15 @@ fn main() -> Result<()> {
                 }
                 if let Some(vintage) = wine.vintage {
                     println!("Vintage: {}", vintage);
+                }
+                if let Some(price) = wine.price {
+                    println!("Price: {:.2}", price);
+                }
+                if let Some(purchase_date) = &wine.purchase_date {
+                    println!("Purchase date: {}", purchase_date);
+                }
+                if let Some(drink_by) = &wine.drink_by {
+                    println!("Drink by: {}", drink_by);
                 }
                 if let Some(region) = &wine.region {
                     let location = if let Some(country) = &wine.country {
@@ -304,6 +337,33 @@ fn main() -> Result<()> {
                 }
                 if let Some(producer) = update_args.producer {
                     wine.producer = Some(producer.trim().to_string());
+                }
+                if let Some(price) = update_args.price {
+                    if !price.is_finite() {
+                        eprintln!("Error: Price must be finite");
+                        std::process::exit(1);
+                    }
+                    if price < 0.0 {
+                        eprintln!("Error: Price must be non-negative");
+                        std::process::exit(1);
+                    }
+                    wine.price = Some(price);
+                }
+                if let Some(purchase_date) = update_args.purchase_date {
+                    let purchase_date = purchase_date.trim();
+                    if purchase_date.is_empty() {
+                        eprintln!("Error: Purchase date cannot be empty");
+                        std::process::exit(1);
+                    }
+                    wine.purchase_date = Some(purchase_date.to_string());
+                }
+                if let Some(drink_by) = update_args.drink_by {
+                    let drink_by = drink_by.trim();
+                    if drink_by.is_empty() {
+                        eprintln!("Error: Drink-by date cannot be empty");
+                        std::process::exit(1);
+                    }
+                    wine.drink_by = Some(drink_by.to_string());
                 }
                 if let Some(region) = update_args.region {
                     wine.region = Some(region.trim().to_string());
