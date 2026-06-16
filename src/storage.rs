@@ -5,7 +5,10 @@ use std::path::Path;
 use crate::wine::Wine;
 
 pub fn load_wines(path: &Path) -> Result<Vec<Wine>> {
-    if !path.exists() {
+    if !path
+        .try_exists()
+        .with_context(|| format!("Failed to access wine data at {}", path.display()))?
+    {
         return Ok(Vec::new());
     }
 

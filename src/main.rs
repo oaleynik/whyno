@@ -19,9 +19,7 @@ struct Args {
 
 fn get_default_data_path() -> PathBuf {
     if let Some(proj_dirs) = ProjectDirs::from("com", "whyno", "whyno") {
-        let data_dir = proj_dirs.data_dir();
-        std::fs::create_dir_all(data_dir).ok();
-        data_dir.join("wines.json")
+        proj_dirs.data_dir().join("wines.json")
     } else {
         PathBuf::from("./whyno.json")
     }
