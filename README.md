@@ -51,7 +51,7 @@ whyno list --grape merlot
 # Filter by minimum rating
 whyno list --min-rating 4
 
-# Search across all fields
+# Search across text fields
 whyno list --query rioja
 
 # Filter by tag
